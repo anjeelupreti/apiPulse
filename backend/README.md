@@ -69,13 +69,16 @@ Each has its own README — go there for model fields, the actual API routes, an
 |---|---|
 | `/admin/` | Django admin — quick way to poke at the DB without curl |
 | `/api/auth/` | DRF's login/logout views (mainly so the browsable API works) |
+| `/api/auth/token/` | POST username+password -> JWT access+refresh pair |
+| `/api/auth/token/refresh/` | POST refresh token -> new access token |
+| `/api/accounts/register/` | POST to create a new user, open to anyone |
 | `/api/monitors/` | full CRUD, see monitors README |
 | `/api/checks/` | read-only, see checks README |
 | `/api/incidents/` | read-only, see incidents README |
 | `/api/alert-channels/` | full CRUD, see alerts README |
 | `/api/notifications/` | read-only delivery log, see alerts README |
 
-Auth right now is Django session auth (cookie, if I'm logged into `/admin/`) or HTTP Basic auth (for curl / testing). Neither of these is what I want once there's a real frontend — I'll need token or JWT auth for that, haven't built it yet.
+Auth accepts three things now, in this order: JWT (`Authorization: Bearer <token>` — what a real frontend uses), Django session auth (cookie, if logged into `/admin/`), or HTTP Basic auth (still handy for quick curl testing). See the accounts README for why all three coexist instead of picking just one.
 
 Every viewset scopes its queryset to `request.user` — `Monitor.objects.filter(owner=request.user)`, and Checks/Incidents filter through `monitor__owner=request.user`. So logging in as a different user shows a completely different (empty, until they add monitors) list. That's the "each user has their own space" behavior, currently at the individual-user level — no shared team workspaces yet.
 

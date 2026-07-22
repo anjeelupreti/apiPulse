@@ -80,7 +80,7 @@ I split these into separate Django apps on purpose, one concern each, instead of
 | Email alerts on incident open/resolve | done — Gmail SMTP, verified a real email sends both ways |
 | Slack / webhook alerts | not built — `AlertChannel` model supports the types, no sender written yet |
 | React frontend | not built |
-| Real token/JWT auth (for the frontend to log in with) | not built — API currently uses Django session auth + basic auth, fine for me testing with curl, not fine for a real frontend |
+| Registration + JWT auth | done — `/api/accounts/register/`, `/api/auth/token/`, verified a fresh user only ever sees their own monitors |
 | Multi-user teams / orgs / proper RBAC | not built — right now it's just "each user only sees their own monitors," no shared team workspaces |
 
 ## Branching rule I'm holding myself to
