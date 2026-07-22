@@ -5,6 +5,7 @@ import { RequireAuth } from './auth/RequireAuth';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { MonitorsPage } from './pages/MonitorsPage';
+import { MonitorDetailPage } from './pages/MonitorDetailPage';
 
 function App() {
   return (
@@ -17,6 +18,14 @@ function App() {
         element={
           <RequireAuth>
             <MonitorsPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/monitors/:id"
+        element={
+          <RequireAuth>
+            <MonitorDetailPage />
           </RequireAuth>
         }
       />

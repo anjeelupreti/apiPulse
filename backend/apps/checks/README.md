@@ -45,4 +45,8 @@ Read-only — I never want to manually create a Check through the API, only the 
 |---|---|---|
 | GET | `/api/checks/` | all checks across my monitors, newest first |
 | GET | `/api/checks/?monitor={id}` | just one monitor's history |
+| GET | `/api/checks/?monitor={id}&is_up=false` | only the failures for that monitor |
+| GET | `/api/checks/?monitor={id}&since=...&until=...` | date range, either end optional (ISO datetimes, filtered against `checked_at`) |
 | GET | `/api/checks/{id}/` | one specific check |
+
+Added the `since`/`until`/`is_up` filters for the monitor detail page in the frontend - it shows a "recent checks" log per monitor with filter controls, and this is what powers them. Kept the filtering logic as plain `if` checks parsing query params in the viewset rather than pulling in `django-filter` - three optional params didn't feel like enough to justify a new dependency.
