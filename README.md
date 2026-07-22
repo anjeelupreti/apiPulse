@@ -84,6 +84,8 @@ I split these into separate Django apps on purpose, one concern each, instead of
 | Registration + JWT auth | done — `/api/accounts/register/`, `/api/auth/token/`, verified a fresh user only ever sees their own monitors |
 | Google login | built, not yet confirmed with a real click — `/api/auth/google/` verifies the ID token and issues our own JWT pair; button renders correctly with the right Client ID, but Google's authorized-origins setting needs time to propagate before an actual sign-in can be tested |
 | Incident escalation (re-notify if still down after N minutes) | done — adapted from how Sentry avoids emailing once and going silent for a still-broken issue; `ESCALATION_INTERVAL = 15min`, no cap on repeat count |
+| Auth headers for monitored URLs (Basic/Bearer/API key) | done — credentials encrypted at rest (Fernet), never returned through the API even to their own owner; verified against a real header-echoing test service for all three types |
+| Response-time charts | not built yet |
 | Multi-user teams / orgs / proper RBAC | not built — right now it's just "each user only sees their own monitors," no shared team workspaces |
 | Admin panel (React admin section, feature flags, traffic/usage analytics) | not built — decided to scope this as its own set of milestones rather than one big undertaking |
 

@@ -11,6 +11,9 @@ python -m venv .venv
 # source .venv/bin/activate && pip install -r requirements.txt  # Mac/Linux
 
 cp .env.example .env      # then fill in real values if this isn't just local dev
+# FIELD_ENCRYPTION_KEY specifically needs a real value even in dev, or any
+# monitor with auth configured will fail - generate one with:
+# python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
 
 cd ../deployment
 docker compose up -d      # Postgres + Redis
