@@ -87,7 +87,8 @@ I split these into separate Django apps on purpose, one concern each, instead of
 | Auth headers for monitored URLs (Basic/Bearer/API key) | done — credentials encrypted at rest (Fernet), never returned through the API even to their own owner; verified against a real header-echoing test service for all three types |
 | Response-time chart | done — hand-rolled SVG line chart (no charting library), crosshair + tooltip, keyboard-navigable; verified the rendered shape matches the underlying data exactly |
 | Multi-user teams / orgs / proper RBAC | not built — right now it's just "each user only sees their own monitors," no shared team workspaces |
-| Admin panel (React admin section, feature flags, traffic/usage analytics) | not built — decided to scope this as its own set of milestones rather than one big undertaking |
+| Feature flags (global + per-user) | done — `/api/flags/mine/` (everyone) + `/api/admin/flags/` (staff CRUD); one real gate wired up (`response-time-chart`); verified all three states (global on/off, per-user override) actually change what renders |
+| Admin panel — React admin section, traffic/usage analytics | not built yet — feature flags (above) was the first piece of this epic; the other two are still their own milestones |
 
 ## Branching rule I'm holding myself to
 
