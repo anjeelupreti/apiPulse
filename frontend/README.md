@@ -19,13 +19,28 @@ Needs the backend actually running (`backend/README.md`) — this is just the UI
 src/
   api/          axios client + one file per resource (auth.js, monitors.js, checks.js, incidents.js)
   auth/         AuthContext (login/register/logout state), RequireAuth (route guard), tokens.js (localStorage)
-  components/   pieces reused by a page but not routes themselves — CheckHistory, IncidentHistory
+  components/   pieces reused by a page but not routes themselves — CheckHistory, IncidentHistory,
+                StatusDot, MetricsBar, GoogleLoginButton
   pages/        one file per route — LoginPage, RegisterPage, MonitorsPage, MonitorDetailPage
   App.jsx       routes
-  main.jsx      wraps App in BrowserRouter + AuthProvider
+  main.jsx      wraps App in BrowserRouter + AuthProvider + GoogleOAuthProvider
 ```
 
 Same "split by concern" instinct as the backend — `api/` doesn't know anything about React, it's just functions that call endpoints and return data. `auth/` owns the token lifecycle. `pages/` just renders and calls into the other two. `components/` is new as of the monitor detail page - `CheckHistory` and `IncidentHistory` each have their own filter state and polling, so they earned their own files instead of living inline in `MonitorDetailPage`.
+
+## Design system — status colors, the pulse/alert dots, metrics
+
+Used Claude's `dataviz` skill for this instead of just picking colors that looked fine - it ships a validated default palette (colorblind-safe categorical hues, and a fixed status palette that's never reused for anything else) plus rules for how a dashboard should actually be built. `index.css` defines the palette as CSS custom properties - surfaces, ink (primary/secondary/muted text), and the four status colors (`good`/`warning`/`serious`/`critical`) - light mode in `:root`, dark mode under `prefers-color-scheme: dark`.
+
+**`StatusDot`** is the one component every status indicator in the app goes through - the monitors table, the monitor detail header, `CheckHistory`'s per-row status, even `IncidentHistory` (reused with `upLabel="resolved"` / `downLabel="ongoing"` so an incident's ongoing/resolved state uses the exact same visual language as a monitor's up/down state, instead of inventing a second color scheme). Every dot ships with a text label next to it, never color alone - colorblind readers (and anyone glancing quickly) shouldn't have to distinguish red from green to know what's going on.
+
+The two animations:
+- **Up** — a calm 2-second outward-expanding ring (`status-pulse-ring`), meant to read as "alive and being watched," not urgent.
+- **Down** — a tighter 1.1-second glow pulse (`status-pulse-alert`), meant to read as "needs attention" without being an actual flashing strobe. Deliberately kept well under 3Hz (WCAG's seizure-risk threshold) - urgency doesn't require speed that fast.
+
+Both respect `prefers-reduced-motion` - a global rule in `index.css` collapses every animation to effectively-instant for anyone with that OS setting on, rather than each component needing its own check.
+
+**`MetricsBar`** is the stat-tile row at the top of the monitors page (Monitors / Up / Down / Ongoing incidents) - the "clear metrics" a monitoring dashboard should lead with, following the skill's stat-tile contract (label + value, color only on the value, only when the number is actually notable - an "Up" tile isn't green when it's 0). "Ongoing incidents" comes from `/api/incidents/?resolved=false` with no monitor filter (had to make `monitorId` optional in `api/incidents.js` for this - it previously always required one).
 
 ## The JWT dance (this is the part I had to actually think through)
 
@@ -66,10 +81,12 @@ Ran it in a real browser end to end, twice now:
 
 No console errors in either run.
 
+For the design/theme pass: seeded a demo user with one up monitor (valid SSL cert, real expiry date) and one down monitor with an ongoing incident, logged in as them in a real (headless) browser, and screenshotted the dashboard in both light and dark mode (`page.newPage({ colorScheme })`) - metrics tiles, status dots, and the SSL badges all rendered correctly in both, zero console errors. Confirmed via `getComputedStyle` that the pulse/alert animations are actually applying (`status-pulse-ring` / `status-pulse-alert` with the right durations), not just present in the CSS and silently not firing.
+
 For Google login specifically: confirmed `npm run build` succeeds, confirmed in a real (headless) browser that the actual Google-rendered button shows up on both pages with the correct Client ID embedded in its request, and confirmed the backend's `/api/auth/google/` correctly rejects a missing or garbage token (400 / 401). What I *couldn't* verify end-to-end is an actual successful sign-in - that needs a real Google account clicking through a real consent screen, which isn't something to automate. First real click also hit `[GSI_LOGGER]: The given origin is not allowed for the given client ID` in the console, which is Google's authorized-origins setting taking time to propagate (documented as up to a few hours), not a bug here - worth re-testing a real click once that's had time to settle, and worth a real look if it's still failing after that.
 
 ## What's not built yet
 
-- Response-time charts (the data's there in `CheckHistory`, just rendered as a table, not a graph)
+- Response-time charts (the data's there in `CheckHistory`, just rendered as a table, not a graph) - would follow the same `dataviz` skill, this just wasn't in scope for the "clear metrics" pass
 - Build tooling beyond Vite's defaults — no path aliases, no component library, nothing fancy
-- Real styling — this is intentionally plain right now, functional over polished
+- A manual light/dark toggle - it follows the OS setting (`prefers-color-scheme`) only, no in-app switch and no persisted preference

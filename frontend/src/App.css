@@ -1,3 +1,5 @@
+/* ---------- layout basics ---------- */
+
 .auth-page {
   max-width: 320px;
   margin: 4rem auto;
@@ -6,7 +8,7 @@
 .auth-page .divider {
   text-align: center;
   margin: 1rem 0;
-  color: var(--text);
+  color: var(--text-muted);
 }
 
 .google-login {
@@ -14,17 +16,10 @@
   justify-content: center;
 }
 
-.auth-page form,
-.monitor-form {
+.auth-page form {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-}
-
-.monitor-form {
-  flex-direction: row;
-  align-items: center;
-  margin: 1.5rem 0;
 }
 
 .auth-page label {
@@ -32,22 +27,109 @@
   flex-direction: column;
   gap: 0.25rem;
   font-size: 0.9rem;
+  color: var(--text-secondary);
 }
 
-input {
+/* ---------- form controls ---------- */
+
+input,
+select {
   padding: 0.5rem;
   font-size: 1rem;
+  font-family: inherit;
+  color: var(--text-primary);
+  background: var(--surface-card);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+}
+
+input:focus,
+select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+button {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  font-family: inherit;
+  font-weight: 600;
+  color: var(--accent-text);
+  background: var(--accent);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:hover {
+  filter: brightness(1.08);
 }
 
 .error {
-  color: #d33;
+  color: var(--status-critical);
 }
+
+/* ---------- cards (the base surface every panel sits on) ---------- */
+
+.card {
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.25rem;
+}
+
+/* ---------- metrics row ---------- */
+
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.stat-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stat-tile__label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.stat-tile__value {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-variant-numeric: proportional-nums;
+}
+
+.stat-tile--good .stat-tile__value {
+  color: var(--status-good);
+}
+
+.stat-tile--critical .stat-tile__value {
+  color: var(--status-critical);
+}
+
+/* ---------- monitors page ---------- */
 
 .monitors-page header {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
+
+.monitor-form {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+}
+
+/* ---------- tables ---------- */
 
 table {
   width: 100%;
@@ -57,18 +139,97 @@ table {
 th,
 td {
   text-align: left;
-  padding: 0.5rem;
-  border-bottom: 1px solid #ddd;
+  padding: 0.6rem 0.5rem;
+  border-bottom: 1px solid var(--border);
 }
+
+th {
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+td {
+  color: var(--text-primary);
+}
+
+/* ---------- status dot: pulse (up) / alert (down) ---------- */
+
+.status-dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-transform: capitalize;
+}
+
+.status-dot__mark {
+  position: relative;
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-dot--unknown .status-dot__mark {
+  background: var(--border-strong);
+}
+
+.status-dot--up .status-dot__mark {
+  background: var(--status-good);
+}
+
+/* calm outward ring, ~2s - reads as "alive", not urgent */
+.status-dot--up .status-dot__mark::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--status-good);
+  animation: status-pulse-ring 2s ease-out infinite;
+}
+
+@keyframes status-pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+.status-dot--down .status-dot__mark {
+  background: var(--status-critical);
+  /* tighter, 1s glow pulse - meant to read as urgent without an actual
+     flash (kept well under WCAG's 3Hz seizure-risk threshold) */
+  animation: status-pulse-alert 1.1s ease-in-out infinite;
+}
+
+@keyframes status-pulse-alert {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(208, 59, 59, 0.55);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(208, 59, 59, 0);
+  }
+}
+
+/* ---------- monitor detail page ---------- */
 
 .monitor-detail-page dl {
   display: grid;
   grid-template-columns: max-content 1fr;
-  gap: 0.25rem 1rem;
+  gap: 0.4rem 1rem;
 }
 
 .monitor-detail-page dt {
-  font-weight: bold;
+  font-weight: 600;
+  color: var(--text-secondary);
 }
 
 .monitor-detail-page dd {
@@ -85,10 +246,29 @@ td {
   align-items: center;
   margin-bottom: 1rem;
   font-size: 0.9rem;
+  color: var(--text-secondary);
 }
 
 .filters label {
   display: flex;
   align-items: center;
   gap: 0.25rem;
+}
+
+/* ---------- ssl badge ---------- */
+
+.ssl-badge {
+  font-size: 0.85rem;
+}
+
+.ssl-badge--valid {
+  color: var(--status-good);
+}
+
+.ssl-badge--invalid {
+  color: var(--status-critical);
+}
+
+.ssl-badge--na {
+  color: var(--text-muted);
 }

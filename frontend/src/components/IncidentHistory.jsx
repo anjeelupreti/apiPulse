@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { listIncidents } from '../api/incidents';
+import { StatusDot } from './StatusDot';
 
 const POLL_MS = 10000;
 
@@ -65,7 +66,13 @@ export function IncidentHistory({ monitorId }) {
                 <td>{new Date(i.started_at).toLocaleString()}</td>
                 <td>{i.resolved_at ? new Date(i.resolved_at).toLocaleString() : '-'}</td>
                 <td>{i.cause || '-'}</td>
-                <td>{i.is_ongoing ? 'ongoing' : 'resolved'}</td>
+                <td>
+                  <StatusDot
+                    status={i.is_ongoing ? 'down' : 'up'}
+                    upLabel="resolved"
+                    downLabel="ongoing"
+                  />
+                </td>
               </tr>
             ))}
           </tbody>
