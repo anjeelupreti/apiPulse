@@ -77,12 +77,12 @@ I split these into separate Django apps on purpose, one concern each, instead of
 | Monitor CRUD API | done |
 | Celery engine — pings monitors, records Checks, opens/resolves Incidents | done |
 | SSL certificate checking | not built — fields exist on `Check` but I'm not populating them yet |
-| Email alerts on incident open/resolve | done — Gmail SMTP, verified a real email sends both ways |
+| Email alerts on incident open/resolve/escalate | done — Gmail SMTP, verified all three fire correctly and that the escalation interval actually gates repeat sends |
 | Slack / webhook alerts | not built — `AlertChannel` model supports the types, no sender written yet |
 | React frontend | in progress — auth, monitor list+create, and a per-monitor detail page with a filterable, auto-refreshing check/incident history, all verified in a real browser. No charts yet, no Google login |
 | Registration + JWT auth | done — `/api/accounts/register/`, `/api/auth/token/`, verified a fresh user only ever sees their own monitors |
 | Google login | not built yet — decided on approach (frontend Google Identity Services -> backend verifies ID token -> issues our own JWT), needs a Google Cloud OAuth Client ID before I can build it |
-| Incident escalation (re-notify if still down after N minutes) | not built — adapting this from how Sentry avoids emailing once and going silent for a still-broken issue |
+| Incident escalation (re-notify if still down after N minutes) | done — adapted from how Sentry avoids emailing once and going silent for a still-broken issue; `ESCALATION_INTERVAL = 15min`, no cap on repeat count |
 | Multi-user teams / orgs / proper RBAC | not built — right now it's just "each user only sees their own monitors," no shared team workspaces |
 | Admin panel (React admin section, feature flags, traffic/usage analytics) | not built — decided to scope this as its own set of milestones rather than one big undertaking |
 

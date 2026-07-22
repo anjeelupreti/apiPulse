@@ -8,5 +8,8 @@ class IncidentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Incident
-        fields = ['id', 'monitor', 'started_at', 'resolved_at', 'cause', 'is_ongoing']
+        fields = [
+            'id', 'monitor', 'started_at', 'resolved_at', 'cause',
+            'is_ongoing', 'last_escalated_at',
+        ]
         read_only_fields = fields

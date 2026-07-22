@@ -14,7 +14,12 @@ def _send_email(channel, incident, event):
             f'Cause: {incident.cause or "unknown"}\n'
             f'Started at: {incident.started_at}'
         )
-    else:
+    elif event == 'escalated':
+        body = (
+            f'{incident.monitor.name} ({incident.monitor.url}) is STILL down.\n'
+            f'Ongoing since: {incident.started_at}'
+        )
+    else:  # resolved
         body = (
             f'{incident.monitor.name} ({incident.monitor.url}) recovered.\n'
             f'Resolved at: {incident.resolved_at}'
@@ -31,8 +36,9 @@ SENDERS = {
 
 @shared_task
 def notify_incident(incident_id, event):
-    """Fan out one incident open/resolve event to every active AlertChannel
-    on that monitor. Called from incidents.services.evaluate_incident."""
+    """Fan out one incident event (opened/escalated/resolved) to every
+    active AlertChannel on that monitor. Called from
+    incidents.services.evaluate_incident."""
     try:
         incident = Incident.objects.get(pk=incident_id)
     except Incident.DoesNotExist:
