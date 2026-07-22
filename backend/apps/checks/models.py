@@ -2,9 +2,9 @@ from django.db import models
 
 
 class Check(models.Model):
-    """Result of one probe against a Monitor. High write volume, append-only
-    (never updated after creation) — the Celery worker inserts one of these
-    every time it pings a monitor."""
+    # One row per ping. This is going to be the highest-volume table by far
+    # (a check every N seconds, per monitor, forever) and it's append-only —
+    # I never update a Check after it's written, only ever create new ones.
 
     monitor = models.ForeignKey(
         'monitors.Monitor', on_delete=models.CASCADE, related_name='checks'
@@ -15,6 +15,7 @@ class Check(models.Model):
     response_time_ms = models.PositiveIntegerField(null=True, blank=True)
     failure_reason = models.CharField(max_length=255, blank=True)
 
+    # not populated yet — SSL cert checking is still on my todo list
     ssl_valid = models.BooleanField(null=True, blank=True)
     ssl_expires_at = models.DateTimeField(null=True, blank=True)
 
