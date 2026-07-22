@@ -48,6 +48,10 @@ Account linking: I look up (or create) a `User` by `username=email` from the ver
 
 `GOOGLE_CLIENT_SECRET` is stored in `.env` but genuinely unused by any code right now - kept around in case I ever add the server-side flow (e.g. for offline/background access to a Google API), not because this login path needs it.
 
+## Who am I - `GET /api/accounts/me/`
+
+Added this for the admin panel work (`adminpanel` app) - the frontend needed some way to know whether the logged-in person is staff, to decide whether to show an "Admin" link at all. Returns `{id, username, email, is_staff}` for whoever's making the request. Same reasoning as feature flags: don't decode the JWT client-side looking for a staff claim, just ask the API - it's the one source of truth on what "staff" means, and a claim baked into a token can go stale the moment someone's `is_staff` actually changes.
+
 ## What's not built here yet
 
 - Logout / token blacklisting (right now a refresh token is valid until it naturally expires — no way to force-invalidate one early, e.g. if a token leaked)

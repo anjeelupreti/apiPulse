@@ -18,6 +18,20 @@ class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
 
 
+class MeView(APIView):
+    # so the frontend can know who's logged in and whether they're staff,
+    # without decoding the JWT itself - the API is the source of truth on
+    # what "staff" means, same reasoning as everywhere else here
+    def get(self, request):
+        user = request.user
+        return Response({
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'is_staff': user.is_staff,
+        })
+
+
 class GoogleLoginView(APIView):
     # frontend gets an ID token from Google's own JS (Identity Services),
     # we just verify it's genuinely from Google and meant for our app -

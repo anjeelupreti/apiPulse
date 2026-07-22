@@ -15,3 +15,7 @@ export function register(username, email, password) {
 export function googleLogin(idToken) {
   return client.post('/auth/google/', { id_token: idToken }).then((res) => res.data);
 }
+
+export function getMe() {
+  return client.get('/accounts/me/').then((res) => res.data);
+}

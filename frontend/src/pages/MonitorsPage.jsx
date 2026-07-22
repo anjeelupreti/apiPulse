@@ -17,7 +17,7 @@ const emptyForm = {
 };
 
 export function MonitorsPage() {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const [monitors, setMonitors] = useState([]);
   const [ongoingIncidents, setOngoingIncidents] = useState(0);
   const [form, setForm] = useState(emptyForm);
@@ -56,7 +56,10 @@ export function MonitorsPage() {
     <div className="monitors-page">
       <header>
         <h1>Monitors</h1>
-        <button onClick={logout}>Log out</button>
+        <div className="header-actions">
+          {user?.is_staff && <Link to="/admin">Admin</Link>}
+          <button onClick={logout}>Log out</button>
+        </div>
       </header>
 
       {!loading && <MetricsBar monitors={monitors} ongoingIncidents={ongoingIncidents} />}

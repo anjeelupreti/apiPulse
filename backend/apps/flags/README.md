@@ -19,7 +19,7 @@ That fail-closed default created a real question for the one flag I actually use
 
 Deliberately two different shapes for two different audiences: `/mine/` is what every logged-in user hits to decide what to render, and it only ever returns booleans - never who else has a flag, never the full `FeatureFlag` rows. `/api/admin/flags/` is the actual management surface and returns everything, but only staff can reach it at all.
 
-No dedicated UI for `/api/admin/flags/` yet - Django's built-in `/admin/` (already registered, `filter_horizontal` for the user list) is the only way to manage flags today. That's fine for now; the planned React admin section would be a nicer face on the same API, not a replacement for it.
+The React admin section (`adminpanel` app + `frontend/src/pages/AdminPage.jsx`) now gives this a proper UI - create a flag, toggle `is_globally_enabled`, delete one. Django's `/admin/` (`filter_horizontal` for the user list) is still the only way to manage per-user grants though - that part of the UI didn't make it into the admin page's first pass, noted directly on the page itself.
 
 ## What I actually verified works
 
@@ -29,5 +29,5 @@ Then in a real browser: logged in with the flag globally on, confirmed the respo
 
 ## What's not built here yet
 
-- Any UI for flag management beyond Django's default `/admin/` - the React admin section (next up) would be the natural place for this
+- Per-user grant management in the React admin page - still Django `/admin/`-only for that specific action
 - Nothing else in the app is actually gated yet - `response-time-chart` is the one real example; wiring up a new gate anywhere else is just `is_enabled('some-key', request.user)` on the backend or the same `flags['some-key']` pattern via `useFlags()` on the frontend

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 import * as authApi from '../api/auth';
 import { getAccessToken, setTokens, clearTokens } from './tokens';
@@ -10,6 +10,18 @@ export function AuthProvider({ children }) {
   // the JWT client-side, the API is the source of truth on whether it's
   // actually still valid (a stale token just gets a 401 on first use)
   const [isAuthenticated, setIsAuthenticated] = useState(() => Boolean(getAccessToken()));
+  // the profile (username/email/is_staff) - fetched separately from the
+  // JWT itself, same reasoning as flags: don't decode the token
+  // client-side, ask the API who I actually am
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      authApi.getMe().then(setUser);
+    } else {
+      setUser(null);
+    }
+  }, [isAuthenticated]);
 
   async function login(username, password) {
     const data = await authApi.login(username, password);
@@ -34,7 +46,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, register, loginWithGoogle, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, login, register, loginWithGoogle, logout }}>
       {children}
     </AuthContext.Provider>
   );
