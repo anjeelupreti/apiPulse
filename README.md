@@ -76,7 +76,7 @@ I split these into separate Django apps on purpose, one concern each, instead of
 | Custom User model, Postgres, env-based settings | done |
 | Monitor CRUD API | done |
 | Celery engine — pings monitors, records Checks, opens/resolves Incidents | done |
-| SSL certificate checking | not built — fields exist on `Check` but I'm not populating them yet |
+| SSL certificate checking | done in the backend — verified against a real cert and an unreachable host; not shown in the frontend yet (queued for the dashboard redesign), and doesn't feed into incident detection |
 | Email alerts on incident open/resolve/escalate | done — Gmail SMTP, verified all three fire correctly and that the escalation interval actually gates repeat sends |
 | Slack / webhook alerts | not built — `AlertChannel` model supports the types, no sender written yet |
 | React frontend | in progress — auth (password + Google), monitor list+create, and a per-monitor detail page with a filterable, auto-refreshing check/incident history, all verified in a real browser. No charts yet |

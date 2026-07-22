@@ -7,6 +7,7 @@ from incidents.services import evaluate_incident
 from monitors.models import Monitor
 
 from .models import Check
+from .ssl_check import check_ssl_certificate
 
 
 @shared_task
@@ -36,12 +37,20 @@ def perform_check(monitor_id):
     except requests.exceptions.RequestException as exc:
         failure_reason = str(exc)
 
+    # separate TLS handshake from the one `requests` already did above -
+    # a bit wasteful (two handshakes per check instead of one) but a lot
+    # simpler to reason about than digging the cert out of requests'
+    # connection internals. fine at this scale.
+    ssl_valid, ssl_expires_at = check_ssl_certificate(monitor.url, timeout=monitor.timeout_seconds)
+
     check = Check.objects.create(
         monitor=monitor,
         is_up=is_up,
         status_code=status_code,
         response_time_ms=response_time_ms,
         failure_reason=failure_reason,
+        ssl_valid=ssl_valid,
+        ssl_expires_at=ssl_expires_at,
     )
 
     monitor.last_checked_at = check.checked_at
