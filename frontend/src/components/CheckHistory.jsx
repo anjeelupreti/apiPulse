@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { listChecks, fetchPage } from '../api/checks';
+import { ResponseTimeChart } from './ResponseTimeChart';
 import { StatusDot } from './StatusDot';
 
 const POLL_MS = 10000;
@@ -83,6 +84,8 @@ export function CheckHistory({ monitorId }) {
         </label>
         {viewingMore && <button onClick={loadRecent}>Back to recent</button>}
       </div>
+
+      {results.length > 0 && <ResponseTimeChart checks={results} />}
 
       {results.length === 0 ? (
         <p>No checks yet.</p>

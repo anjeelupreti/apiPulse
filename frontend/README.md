@@ -20,7 +20,7 @@ src/
   api/          axios client + one file per resource (auth.js, monitors.js, checks.js, incidents.js, alerts.js)
   auth/         AuthContext (login/register/logout state), RequireAuth (route guard), tokens.js (localStorage)
   components/   pieces reused by a page but not routes themselves — CheckHistory, IncidentHistory,
-                AlertChannels, StatusDot, MetricsBar, GoogleLoginButton
+                AlertChannels, StatusDot, MetricsBar, ResponseTimeChart, GoogleLoginButton
   pages/        one file per route — LoginPage, RegisterPage, MonitorsPage, MonitorDetailPage
   App.jsx       routes
   main.jsx      wraps App in BrowserRouter + AuthProvider + GoogleOAuthProvider
@@ -65,6 +65,16 @@ Clicking a monitor's name (`/monitors/:id`) goes to `MonitorDetailPage`, which r
 
 One wrinkle I had to handle: if you click "Load more" and pull in older pages, a naive auto-refresh would wipe that out by re-fetching just page 1 every 10 seconds. `CheckHistory` tracks a `viewingMore` flag and pauses its own polling once you've paged past "recent," with a "back to recent" button that resets and resumes it.
 
+## Response-time chart
+
+`ResponseTimeChart` sits above the checks table in `CheckHistory` - a hand-rolled SVG line chart, no charting library. Used the `dataviz` skill again to pick the form (trend over time, one series → line with a soft area wash, no legend needed since a single series' title already says what's plotted) and the interaction contract (a crosshair that snaps to the nearest point, one tooltip with the value bold and the timestamp secondary, same info reachable on keyboard focus + arrow keys as on hover).
+
+Why hand-rolled instead of a library: it's one line, one area, a few gridlines, and a tooltip - maybe 100 lines of plain SVG + one `useState` for the hovered index. Didn't feel like reaching for Recharts or Chart.js was buying enough to be worth a new dependency and its bundle weight for a chart this simple. Only charts the most recent 30 points regardless of how much history is loaded elsewhere on the page - a giant multi-hundred-point line isn't more readable, it's just more DOM.
+
+Nothing here gates on the chart - every value it plots is also sitting right there in the table underneath it, which is exactly what the skill means by "tooltips enhance, they never gate."
+
+Verified in a real browser: seeded a monitor with 15 checks at deliberately varied response times, confirmed the rendered line's shape matches the table's numbers exactly, confirmed mouse hover produces the right tooltip (value + timestamp) at the nearest point, and confirmed keyboard focus + arrow keys move through the same points with the same tooltip info.
+
 ## Auth for protected monitors
 
 The monitor creation form (`MonitorsPage`) has a collapsed `<details>` section, "Protected endpoint? (optional)" - expand it to pick an auth type (Basic/Bearer/API key) and enter the credential. Collapsed by default since most monitors don't need this and the form was already getting crowded.
@@ -96,6 +106,5 @@ For `AlertChannels`: registered a fresh user, created a monitor, added a Slack c
 
 ## What's not built yet
 
-- Response-time charts (the data's there in `CheckHistory`, just rendered as a table, not a graph) - would follow the same `dataviz` skill, this just wasn't in scope for the "clear metrics" pass
 - Build tooling beyond Vite's defaults — no path aliases, no component library, nothing fancy
 - A manual light/dark toggle - it follows the OS setting (`prefers-color-scheme`) only, no in-app switch and no persisted preference
