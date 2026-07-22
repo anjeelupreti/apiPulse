@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { useAuth } from '../auth/AuthContext';
+import { GoogleLoginButton } from '../components/GoogleLoginButton';
 
 export function LoginPage() {
   const { login } = useAuth();
@@ -41,6 +42,8 @@ export function LoginPage() {
         {error && <p className="error">{error}</p>}
         <button type="submit">Log in</button>
       </form>
+      <p className="divider">or</p>
+      <GoogleLoginButton />
       <p>
         No account? <Link to="/register">Register</Link>
       </p>

@@ -11,7 +11,7 @@ cp .env.example .env   # points at the backend, default is fine for local dev
 npm run dev
 ```
 
-Needs the backend actually running (`backend/README.md`) — this is just the UI, it has nothing to show without the API behind it.
+Needs the backend actually running (`backend/README.md`) — this is just the UI, it has nothing to show without the API behind it. Also needs `VITE_GOOGLE_CLIENT_ID` set in `.env` for the Google button to actually work (see the Google login section below) - without it, everything else still works fine, the button just won't.
 
 ## How it's laid out
 
@@ -49,6 +49,14 @@ Both poll their endpoint every 10 seconds so new data shows up without a manual 
 
 One wrinkle I had to handle: if you click "Load more" and pull in older pages, a naive auto-refresh would wipe that out by re-fetching just page 1 every 10 seconds. `CheckHistory` tracks a `viewingMore` flag and pauses its own polling once you've paged past "recent," with a "back to recent" button that resets and resumes it.
 
+## Google login
+
+`GoogleLoginButton` (in `components/`) wraps `@react-oauth/google`'s `GoogleLogin` component, dropped onto both `LoginPage` and `RegisterPage` - it's the same button either way, since the backend handles first-login-creates-the-account itself. `main.jsx` wraps the whole app in `GoogleOAuthProvider` with `VITE_GOOGLE_CLIENT_ID`, which is what lets `GoogleLogin` render at all.
+
+On success, Google hands back a credential (an ID token) via `onSuccess`; that gets passed straight to `AuthContext.loginWithGoogle`, which posts it to `/api/auth/google/` and stores whatever comes back exactly like a normal login - the rest of the app has no idea whether a session came from a password or from Google.
+
+The Client ID is not a secret - it's meant to end up in browser JS, that's how Google's own flow works - so it living in a `VITE_*` env var (which Vite bakes into the client bundle) is correct and expected. The Client *secret* stays backend-only and unused by this flow.
+
 ## What I actually verified works
 
 Ran it in a real browser end to end, twice now:
@@ -57,6 +65,8 @@ Ran it in a real browser end to end, twice now:
 2. Click into a monitor's detail page → seeded a Check + Incident directly in the database (simulating the Celery engine actually running) → confirmed the page picked both up automatically within one poll cycle, with **no manual reload** → confirmed the down/up and ongoing/resolved filters actually change what's returned.
 
 No console errors in either run.
+
+For Google login specifically: confirmed `npm run build` succeeds, confirmed in a real (headless) browser that the actual Google-rendered button shows up on both pages with the correct Client ID embedded in its request, and confirmed the backend's `/api/auth/google/` correctly rejects a missing or garbage token (400 / 401). What I *couldn't* verify end-to-end is an actual successful sign-in - that needs a real Google account clicking through a real consent screen, which isn't something to automate. First real click also hit `[GSI_LOGGER]: The given origin is not allowed for the given client ID` in the console, which is Google's authorized-origins setting taking time to propagate (documented as up to a few hours), not a bug here - worth re-testing a real click once that's had time to settle, and worth a real look if it's still failing after that.
 
 ## What's not built yet
 

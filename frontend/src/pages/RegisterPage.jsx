@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { useAuth } from '../auth/AuthContext';
+import { GoogleLoginButton } from '../components/GoogleLoginButton';
 
 export function RegisterPage() {
   const { register } = useAuth();
@@ -54,6 +55,8 @@ export function RegisterPage() {
         {error && <p className="error">{error}</p>}
         <button type="submit">Create account</button>
       </form>
+      <p className="divider">or</p>
+      <GoogleLoginButton />
       <p>
         Already registered? <Link to="/login">Log in</Link>
       </p>

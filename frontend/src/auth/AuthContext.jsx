@@ -22,13 +22,19 @@ export function AuthProvider({ children }) {
     await login(username, password);
   }
 
+  async function loginWithGoogle(idToken) {
+    const data = await authApi.googleLogin(idToken);
+    setTokens(data);
+    setIsAuthenticated(true);
+  }
+
   function logout() {
     clearTokens();
     setIsAuthenticated(false);
   }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, register, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, login, register, loginWithGoogle, logout }}>
       {children}
     </AuthContext.Provider>
   );

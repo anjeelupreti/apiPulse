@@ -9,3 +9,9 @@ export function register(username, email, password) {
     .post('/accounts/register/', { username, email, password })
     .then((res) => res.data);
 }
+
+// idToken is the credential Google's own JS hands back after sign-in -
+// same shape response as /auth/token/, so AuthContext treats it identically
+export function googleLogin(idToken) {
+  return client.post('/auth/google/', { id_token: idToken }).then((res) => res.data);
+}
