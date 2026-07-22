@@ -17,10 +17,10 @@ Needs the backend actually running (`backend/README.md`) — this is just the UI
 
 ```
 src/
-  api/          axios client + one file per resource (auth.js, monitors.js, checks.js, incidents.js)
+  api/          axios client + one file per resource (auth.js, monitors.js, checks.js, incidents.js, alerts.js)
   auth/         AuthContext (login/register/logout state), RequireAuth (route guard), tokens.js (localStorage)
   components/   pieces reused by a page but not routes themselves — CheckHistory, IncidentHistory,
-                StatusDot, MetricsBar, GoogleLoginButton
+                AlertChannels, StatusDot, MetricsBar, GoogleLoginButton
   pages/        one file per route — LoginPage, RegisterPage, MonitorsPage, MonitorDetailPage
   App.jsx       routes
   main.jsx      wraps App in BrowserRouter + AuthProvider + GoogleOAuthProvider
@@ -55,12 +55,13 @@ The refresh call uses a *separate* plain axios instance (`refreshClient`, no int
 
 ## Monitor detail page - the "real-time log" per monitor
 
-Clicking a monitor's name (`/monitors/:id`) goes to `MonitorDetailPage`, which renders the monitor's config plus two independent history panels:
+Clicking a monitor's name (`/monitors/:id`) goes to `MonitorDetailPage`, which renders the monitor's config plus three panels:
 
+- **`AlertChannels`** — add/list/delete where this monitor's incidents get sent (email/Slack/webhook). This existed on the backend for a while with no frontend at all - I'd been testing it with curl and the Django shell, which meant the feature was genuinely unusable for anyone but me. Same list-plus-form pattern as the monitors page itself, just scoped to one monitor.
 - **`IncidentHistory`** — the outage timeline (started/resolved/cause/ongoing-or-not), filterable by resolved-state and date range.
-- **`CheckHistory`** — the raw ping log (up/down, HTTP code, response time, failure reason), filterable by up/down and date range, with a "Load more" button that follows DRF's pagination `next` link to page through older history without re-deriving query params myself.
+- **`CheckHistory`** — the raw ping log (up/down, HTTP code, response time, SSL status, failure reason), filterable by up/down and date range, with a "Load more" button that follows DRF's pagination `next` link to page through older history without re-deriving query params myself.
 
-Both poll their endpoint every 10 seconds so new data shows up without a manual refresh - this is the "real-time-ish" part. Deliberately didn't reach for WebSockets/Django Channels for this - polling every 10s is a lot less machinery for a check that only happens every 60s+ anyway, and it's an easy swap later if polling ever actually feels too slow.
+`IncidentHistory` and `CheckHistory` poll their endpoint every 10 seconds so new data shows up without a manual refresh - this is the "real-time-ish" part. Deliberately didn't reach for WebSockets/Django Channels for this - polling every 10s is a lot less machinery for a check that only happens every 60s+ anyway, and it's an easy swap later if polling ever actually feels too slow. `AlertChannels` doesn't poll - channel config doesn't change on its own the way check/incident data does, so a manual refresh after add/delete is enough.
 
 One wrinkle I had to handle: if you click "Load more" and pull in older pages, a naive auto-refresh would wipe that out by re-fetching just page 1 every 10 seconds. `CheckHistory` tracks a `viewingMore` flag and pauses its own polling once you've paged past "recent," with a "back to recent" button that resets and resumes it.
 
@@ -84,6 +85,8 @@ No console errors in either run.
 For the design/theme pass: seeded a demo user with one up monitor (valid SSL cert, real expiry date) and one down monitor with an ongoing incident, logged in as them in a real (headless) browser, and screenshotted the dashboard in both light and dark mode (`page.newPage({ colorScheme })`) - metrics tiles, status dots, and the SSL badges all rendered correctly in both, zero console errors. Confirmed via `getComputedStyle` that the pulse/alert animations are actually applying (`status-pulse-ring` / `status-pulse-alert` with the right durations), not just present in the CSS and silently not firing.
 
 For Google login specifically: confirmed `npm run build` succeeds, confirmed in a real (headless) browser that the actual Google-rendered button shows up on both pages with the correct Client ID embedded in its request, and confirmed the backend's `/api/auth/google/` correctly rejects a missing or garbage token (400 / 401). What I *couldn't* verify end-to-end is an actual successful sign-in - that needs a real Google account clicking through a real consent screen, which isn't something to automate. First real click also hit `[GSI_LOGGER]: The given origin is not allowed for the given client ID` in the console, which is Google's authorized-origins setting taking time to propagate (documented as up to a few hours), not a bug here - worth re-testing a real click once that's had time to settle, and worth a real look if it's still failing after that.
+
+For `AlertChannels`: registered a fresh user, created a monitor, added a Slack channel, added a webhook channel, confirmed both show up in the table, deleted the Slack one, confirmed it's actually gone (not just hidden) - all in a real browser, zero console errors.
 
 ## What's not built yet
 
