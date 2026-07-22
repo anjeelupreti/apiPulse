@@ -3,6 +3,17 @@
   margin: 4rem auto;
 }
 
+.auth-page .divider {
+  text-align: center;
+  margin: 1rem 0;
+  color: var(--text);
+}
+
+.google-login {
+  display: flex;
+  justify-content: center;
+}
+
 .auth-page form,
 .monitor-form {
   display: flex;

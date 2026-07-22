@@ -71,6 +71,7 @@ Each has its own README — go there for model fields, the actual API routes, an
 | `/api/auth/` | DRF's login/logout views (mainly so the browsable API works) |
 | `/api/auth/token/` | POST username+password -> JWT access+refresh pair |
 | `/api/auth/token/refresh/` | POST refresh token -> new access token |
+| `/api/auth/google/` | POST a Google ID token -> JWT access+refresh pair (creates the account on first login) |
 | `/api/accounts/register/` | POST to create a new user, open to anyone |
 | `/api/monitors/` | full CRUD, see monitors README |
 | `/api/checks/` | read-only, see checks README |
