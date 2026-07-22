@@ -2,5 +2,7 @@ from django.contrib.auth.models import AbstractUser
 
 
 class User(AbstractUser):
-    """Custom user model. Empty for now, but swapping AUTH_USER_MODEL later
-    would require rebuilding every migration that touches the user table."""
+    # Empty for now, but doing this on day one anyway — swapping
+    # AUTH_USER_MODEL after the first migration is apparently a nightmare,
+    # so better to eat the cost now while there's nothing to migrate.
+    pass

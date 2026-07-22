@@ -11,6 +11,6 @@ class MonitorSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'owner', 'name', 'url', 'method',
             'check_interval_seconds', 'timeout_seconds', 'expected_status_code',
-            'is_active', 'created_at', 'updated_at',
+            'is_active', 'last_checked_at', 'created_at', 'updated_at',
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'last_checked_at', 'created_at', 'updated_at']

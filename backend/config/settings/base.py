@@ -1,9 +1,5 @@
-"""
-Base settings shared by every environment (dev.py / prod.py both import from here).
-
-For more information on this file, see
-https://docs.djangoproject.com/en/6.0/topics/settings/
-"""
+# stuff every environment needs. dev.py / prod.py both import * from this,
+# then override the bits that actually differ (DEBUG, ALLOWED_HOSTS, etc)
 
 import os
 import sys
@@ -11,23 +7,24 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-# backend/config/settings/base.py -> backend/
+# this file is backend/config/settings/base.py, so I need 3 parents to get
+# back up to backend/
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 load_dotenv(BASE_DIR / '.env')
 
-# Make `apps.monitors` etc. importable as top-level `monitors`, `checks`, ...
-# so INSTALLED_APPS entries don't need the "apps." prefix everywhere.
+# so I can write INSTALLED_APPS as 'monitors' instead of 'apps.monitors'
+# everywhere — apps/ isn't a real package, just a folder I dump my apps in
 sys.path.append(str(BASE_DIR / 'apps'))
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# Falls back to an insecure dev-only key so `dev.py` works without a .env file.
+# falls back to this insecure key so dev.py works without me needing a .env
 SECRET_KEY = os.environ.get(
     'SECRET_KEY', 'django-insecure-ccs!@o*2h-8x@xx%c%c0%+s++&op$9z1gz348sz3ixtf5i^8cy'
 )
 
-# DEBUG and ALLOWED_HOSTS are environment-specific -> set in dev.py / prod.py, not here.
+# DEBUG / ALLOWED_HOSTS differ per environment -> those live in dev.py / prod.py
 
 
 # Application definition
@@ -90,9 +87,9 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 
 # Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-# Same engine in every environment; only the connection target changes,
-# and that lives in .env (see .env.example), not here.
+# same engine everywhere (Postgres, in dev too — decided against sqlite
+# since the diagram I drew up already assumed Postgres). only the host/creds
+# change per environment, and those come from .env, not from here
 
 DATABASES = {
     'default': {
@@ -158,4 +155,27 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 25,
+}
+
+
+# Celery — Redis is doing double duty here, it's both the task queue
+# (broker) and where task results get stashed (result backend)
+
+REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
+
+CELERY_BROKER_URL = REDIS_URL
+CELERY_RESULT_BACKEND = REDIS_URL
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+
+# just one entry that fires every 15s — dispatch_due_checks figures out
+# *which* monitors are actually due on its own, so I don't have to touch
+# this schedule every time I add or remove a monitor
+CELERY_BEAT_SCHEDULE = {
+    'dispatch-due-checks': {
+        'task': 'monitors.tasks.dispatch_due_checks',
+        'schedule': 15.0,
+    },
 }
