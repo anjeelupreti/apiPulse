@@ -8,7 +8,11 @@ class AlertChannelViewSet(viewsets.ModelViewSet):
     serializer_class = AlertChannelSerializer
 
     def get_queryset(self):
-        return AlertChannel.objects.filter(monitor__owner=self.request.user)
+        queryset = AlertChannel.objects.filter(monitor__owner=self.request.user)
+        monitor_id = self.request.query_params.get('monitor')
+        if monitor_id is not None:
+            queryset = queryset.filter(monitor_id=monitor_id)
+        return queryset
 
 
 class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
