@@ -121,6 +121,12 @@ button:hover {
   align-items: center;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 .monitor-form {
   display: flex;
   flex-direction: row;
@@ -367,4 +373,19 @@ td {
 .chart-empty {
   color: var(--text-muted);
   font-size: 0.9rem;
+}
+
+/* ---------- admin page ---------- */
+
+.admin-page section {
+  margin-top: 2rem;
+}
+
+.admin-page td button {
+  margin-right: 0.5rem;
+}
+
+.hint {
+  color: var(--text-muted);
+  font-size: 0.85rem;
 }
