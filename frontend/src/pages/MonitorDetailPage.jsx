@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import { getMonitor } from '../api/monitors';
+import { AlertChannels } from '../components/AlertChannels';
 import { CheckHistory } from '../components/CheckHistory';
 import { IncidentHistory } from '../components/IncidentHistory';
 import { StatusDot } from '../components/StatusDot';
@@ -34,6 +35,7 @@ export function MonitorDetailPage() {
         <dd>{monitor.last_checked_at ? new Date(monitor.last_checked_at).toLocaleString() : 'never'}</dd>
       </dl>
 
+      <AlertChannels monitorId={id} />
       <IncidentHistory monitorId={id} />
       <CheckHistory monitorId={id} />
     </div>

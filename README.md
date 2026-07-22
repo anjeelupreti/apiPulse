@@ -34,8 +34,10 @@ I'm writing this doc mostly for myself, so that when I come back to this in a fe
                     │ / website    │
                     └──────────────┘
 
-    (same worker, once it writes a Check that opens/resolves an Incident,
-     also queues alerts.tasks.notify_incident -> sends an email via Gmail SMTP)
+    (same worker, once it writes a Check that opens/resolves/escalates an
+     Incident, also queues alerts.tasks.notify_incident -> fans out to
+     whatever AlertChannels are configured: email via Gmail SMTP, Slack
+     via an incoming webhook, or a generic webhook with structured JSON)
 ```
 
 The thing I had to get straight in my head: there are **two completely separate things** touching the database, on two separate rhythms.
@@ -77,9 +79,8 @@ I split these into separate Django apps on purpose, one concern each, instead of
 | Monitor CRUD API | done |
 | Celery engine — pings monitors, records Checks, opens/resolves Incidents | done |
 | SSL certificate checking | done — verified against a real cert and an unreachable host; shown in the frontend now too; still doesn't feed into incident detection |
-| Email alerts on incident open/resolve/escalate | done — Gmail SMTP, verified all three fire correctly and that the escalation interval actually gates repeat sends |
-| Slack / webhook alerts | not built — `AlertChannel` model supports the types, no sender written yet |
-| React frontend | in progress — auth (password + Google), monitor list+create, a per-monitor detail page with filterable check/incident history, and a real dashboard theme (status colors, pulse/alert animations, metrics tiles) built with the `dataviz` skill. No charts yet |
+| Email/Slack/webhook alerts on incident open/resolve/escalate | done — verified email via Gmail SMTP, Slack + webhook against a real webhook.site endpoint (success and failure paths both), and that the escalation interval actually gates repeat sends |
+| React frontend | in progress — auth (password + Google), monitor list+create, a per-monitor detail page with filterable check/incident history and alert-channel management, and a real dashboard theme (status colors, pulse/alert animations, metrics tiles) built with the `dataviz` skill. No charts yet |
 | Registration + JWT auth | done — `/api/accounts/register/`, `/api/auth/token/`, verified a fresh user only ever sees their own monitors |
 | Google login | built, not yet confirmed with a real click — `/api/auth/google/` verifies the ID token and issues our own JWT pair; button renders correctly with the right Client ID, but Google's authorized-origins setting needs time to propagate before an actual sign-in can be tested |
 | Incident escalation (re-notify if still down after N minutes) | done — adapted from how Sentry avoids emailing once and going silent for a still-broken issue; `ESCALATION_INTERVAL = 15min`, no cap on repeat count |
