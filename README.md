@@ -80,12 +80,12 @@ I split these into separate Django apps on purpose, one concern each, instead of
 | Celery engine — pings monitors, records Checks, opens/resolves Incidents | done |
 | SSL certificate checking | done — verified against a real cert and an unreachable host; shown in the frontend now too; still doesn't feed into incident detection |
 | Email/Slack/webhook alerts on incident open/resolve/escalate | done — verified email via Gmail SMTP, Slack + webhook against a real webhook.site endpoint (success and failure paths both), and that the escalation interval actually gates repeat sends |
-| React frontend | in progress — auth (password + Google), monitor list+create, a per-monitor detail page with filterable check/incident history and alert-channel management, and a real dashboard theme (status colors, pulse/alert animations, metrics tiles) built with the `dataviz` skill. No charts yet |
+| React frontend | in progress — auth (password + Google), monitor list+create (incl. auth-header config), a per-monitor detail page with filterable check/incident history, alert-channel management, and a response-time chart, plus a real dashboard theme (status colors, pulse/alert animations, metrics tiles) built with the `dataviz` skill |
 | Registration + JWT auth | done — `/api/accounts/register/`, `/api/auth/token/`, verified a fresh user only ever sees their own monitors |
 | Google login | built, not yet confirmed with a real click — `/api/auth/google/` verifies the ID token and issues our own JWT pair; button renders correctly with the right Client ID, but Google's authorized-origins setting needs time to propagate before an actual sign-in can be tested |
 | Incident escalation (re-notify if still down after N minutes) | done — adapted from how Sentry avoids emailing once and going silent for a still-broken issue; `ESCALATION_INTERVAL = 15min`, no cap on repeat count |
 | Auth headers for monitored URLs (Basic/Bearer/API key) | done — credentials encrypted at rest (Fernet), never returned through the API even to their own owner; verified against a real header-echoing test service for all three types |
-| Response-time charts | not built yet |
+| Response-time chart | done — hand-rolled SVG line chart (no charting library), crosshair + tooltip, keyboard-navigable; verified the rendered shape matches the underlying data exactly |
 | Multi-user teams / orgs / proper RBAC | not built — right now it's just "each user only sees their own monitors," no shared team workspaces |
 | Admin panel (React admin section, feature flags, traffic/usage analytics) | not built — decided to scope this as its own set of milestones rather than one big undertaking |
 
