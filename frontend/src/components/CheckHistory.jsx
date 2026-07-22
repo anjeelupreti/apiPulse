@@ -1,8 +1,23 @@
 import { useEffect, useState } from 'react';
 
 import { listChecks, fetchPage } from '../api/checks';
+import { StatusDot } from './StatusDot';
 
 const POLL_MS = 10000;
+
+function SslBadge({ sslValid, sslExpiresAt }) {
+  if (sslValid == null) {
+    return <span className="ssl-badge ssl-badge--na">n/a</span>;
+  }
+  if (!sslValid) {
+    return <span className="ssl-badge ssl-badge--invalid">invalid</span>;
+  }
+  return (
+    <span className="ssl-badge ssl-badge--valid">
+      valid{sslExpiresAt ? ` · expires ${new Date(sslExpiresAt).toLocaleDateString()}` : ''}
+    </span>
+  );
+}
 
 export function CheckHistory({ monitorId }) {
   const [filters, setFilters] = useState({ is_up: '', since: '', until: '' });
@@ -79,6 +94,7 @@ export function CheckHistory({ monitorId }) {
               <th>Status</th>
               <th>HTTP code</th>
               <th>Response time</th>
+              <th>SSL</th>
               <th>Failure reason</th>
             </tr>
           </thead>
@@ -86,9 +102,14 @@ export function CheckHistory({ monitorId }) {
             {results.map((c) => (
               <tr key={c.id}>
                 <td>{new Date(c.checked_at).toLocaleString()}</td>
-                <td>{c.is_up ? 'up' : 'down'}</td>
+                <td>
+                  <StatusDot status={c.is_up ? 'up' : 'down'} />
+                </td>
                 <td>{c.status_code ?? '-'}</td>
                 <td>{c.response_time_ms != null ? `${c.response_time_ms} ms` : '-'}</td>
+                <td>
+                  <SslBadge sslValid={c.ssl_valid} sslExpiresAt={c.ssl_expires_at} />
+                </td>
                 <td>{c.failure_reason || '-'}</td>
               </tr>
             ))}

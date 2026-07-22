@@ -15,6 +15,7 @@ This app answers one question: **what am I watching, and how should it be checke
 | `expected_status_code` | what "up" means for this monitor — defaults to 200, but if I'm monitoring something that's supposed to 401 without auth, I'd set that here |
 | `is_active` | lets me pause a monitor without deleting its history |
 | `last_checked_at` | when the engine last actually pinged this — this is how the scheduler (below) knows what's overdue |
+| `current_status` (serializer only, not a DB column) | `'up'` / `'down'` / `null` (no checks yet) — the frontend's status dots run off this |
 
 ## tasks.py — the scheduler side of the engine
 
@@ -48,3 +49,5 @@ curl -u me:pass -X POST http://127.0.0.1:8000/api/monitors/ \
   -H "Content-Type: application/json" \
   -d '{"name":"my api health","url":"https://api.example.com/health"}'
 ```
+
+`current_status` on the serializer does `monitor.checks.order_by('-checked_at').first()` per monitor - one extra query per monitor in a list response, not prefetched. Fine at this scale (added it so the frontend dashboard doesn't need N separate requests just to show status dots); would want an annotate/prefetch if the monitor list ever gets large.

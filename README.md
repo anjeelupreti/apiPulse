@@ -76,10 +76,10 @@ I split these into separate Django apps on purpose, one concern each, instead of
 | Custom User model, Postgres, env-based settings | done |
 | Monitor CRUD API | done |
 | Celery engine — pings monitors, records Checks, opens/resolves Incidents | done |
-| SSL certificate checking | done in the backend — verified against a real cert and an unreachable host; not shown in the frontend yet (queued for the dashboard redesign), and doesn't feed into incident detection |
+| SSL certificate checking | done — verified against a real cert and an unreachable host; shown in the frontend now too; still doesn't feed into incident detection |
 | Email alerts on incident open/resolve/escalate | done — Gmail SMTP, verified all three fire correctly and that the escalation interval actually gates repeat sends |
 | Slack / webhook alerts | not built — `AlertChannel` model supports the types, no sender written yet |
-| React frontend | in progress — auth (password + Google), monitor list+create, and a per-monitor detail page with a filterable, auto-refreshing check/incident history, all verified in a real browser. No charts yet |
+| React frontend | in progress — auth (password + Google), monitor list+create, a per-monitor detail page with filterable check/incident history, and a real dashboard theme (status colors, pulse/alert animations, metrics tiles) built with the `dataviz` skill. No charts yet |
 | Registration + JWT auth | done — `/api/accounts/register/`, `/api/auth/token/`, verified a fresh user only ever sees their own monitors |
 | Google login | built, not yet confirmed with a real click — `/api/auth/google/` verifies the ID token and issues our own JWT pair; button renders correctly with the right Client ID, but Google's authorized-origins setting needs time to propagate before an actual sign-in can be tested |
 | Incident escalation (re-notify if still down after N minutes) | done — adapted from how Sentry avoids emailing once and going silent for a still-broken issue; `ESCALATION_INTERVAL = 15min`, no cap on repeat count |
