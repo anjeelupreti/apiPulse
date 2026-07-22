@@ -13,6 +13,10 @@ class Incident(models.Model):
     started_at = models.DateTimeField(auto_now_add=True)
     resolved_at = models.DateTimeField(null=True, blank=True)
     cause = models.CharField(max_length=255, blank=True)
+    # null until the first re-notify fires - see services.ESCALATION_INTERVAL.
+    # tracks "when did I last actually tell someone about this" so a
+    # still-ongoing incident doesn't go silent after the initial email.
+    last_escalated_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ['-started_at']
