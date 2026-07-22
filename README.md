@@ -57,8 +57,10 @@ apiPulse/
 │       ├── monitors/   what I'm watching (+ the scheduler task)
 │       ├── checks/     the ping results (+ the actual ping task)
 │       ├── incidents/  outage tracking (+ open/resolve logic)
-│       └── alerts/     email notifications (Slack/webhook modeled, not sending yet)
-├── frontend/       React dashboard — login/register + monitor list+create, see frontend/README.md
+│       ├── alerts/     email/Slack/webhook notifications on incident open/resolve/escalate
+│       ├── flags/      feature flags, global or per-user
+│       └── adminpanel/ cross-cutting admin data (users, stats) for the admin section
+├── frontend/       React dashboard — auth, monitor management, admin section, see frontend/README.md
 └── deployment/     docker-compose for Postgres/Redis
 ```
 
@@ -88,7 +90,8 @@ I split these into separate Django apps on purpose, one concern each, instead of
 | Response-time chart | done — hand-rolled SVG line chart (no charting library), crosshair + tooltip, keyboard-navigable; verified the rendered shape matches the underlying data exactly |
 | Multi-user teams / orgs / proper RBAC | not built — right now it's just "each user only sees their own monitors," no shared team workspaces |
 | Feature flags (global + per-user) | done — `/api/flags/mine/` (everyone) + `/api/admin/flags/` (staff CRUD); one real gate wired up (`response-time-chart`); verified all three states (global on/off, per-user override) actually change what renders |
-| Admin panel — React admin section, traffic/usage analytics | not built yet — feature flags (above) was the first piece of this epic; the other two are still their own milestones |
+| Admin section (users, stats, feature flags) | done — a real staff-only `/admin` page in the app itself, not just Django's `/admin/`; deactivate/reactivate users, manage flags; verified staff-vs-non-staff access control and every action against the database, not just the UI |
+| Traffic/usage analytics | not built yet — last piece of the admin-panel epic |
 
 ## Branching rule I'm holding myself to
 

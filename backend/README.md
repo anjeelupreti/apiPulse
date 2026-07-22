@@ -62,7 +62,9 @@ I split by concern instead of one big app, because when something's broken I wan
 - **[monitors](apps/monitors/README.md)** — what I'm watching, and the scheduler that decides what's due
 - **[checks](apps/checks/README.md)** — the actual ping logic + one row per result
 - **[incidents](apps/incidents/README.md)** — deciding when a string of failures becomes an "outage"
-- **[alerts](apps/alerts/README.md)** — email notifications on incident open/resolve (Slack/webhook modeled, not sending yet)
+- **[alerts](apps/alerts/README.md)** — email/Slack/webhook notifications on incident open/resolve/escalate
+- **[flags](apps/flags/README.md)** — feature flags, global or per-user
+- **[adminpanel](apps/adminpanel/README.md)** — cross-cutting admin data (users, stats) the React admin section reads
 
 Each has its own README — go there for model fields, the actual API routes, and the reasoning behind that app specifically.
 
@@ -76,11 +78,16 @@ Each has its own README — go there for model fields, the actual API routes, an
 | `/api/auth/token/refresh/` | POST refresh token -> new access token |
 | `/api/auth/google/` | POST a Google ID token -> JWT access+refresh pair (creates the account on first login) |
 | `/api/accounts/register/` | POST to create a new user, open to anyone |
+| `/api/accounts/me/` | GET my own `{id, username, email, is_staff}` |
 | `/api/monitors/` | full CRUD, see monitors README |
 | `/api/checks/` | read-only, see checks README |
 | `/api/incidents/` | read-only, see incidents README |
 | `/api/alert-channels/` | full CRUD, see alerts README |
 | `/api/notifications/` | read-only delivery log, see alerts README |
+| `/api/flags/mine/` | GET my resolved feature flags, see flags README |
+| `/api/admin/flags/` | full CRUD, staff only, see flags README |
+| `/api/admin/users/` | list/update (is_active only), staff only, see adminpanel README |
+| `/api/admin/stats/` | GET system-wide counts, staff only, see adminpanel README |
 
 Auth accepts three things now, in this order: JWT (`Authorization: Bearer <token>` — what a real frontend uses), Django session auth (cookie, if logged into `/admin/`), or HTTP Basic auth (still handy for quick curl testing). See the accounts README for why all three coexist instead of picking just one.
 

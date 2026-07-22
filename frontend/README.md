@@ -17,12 +17,12 @@ Needs the backend actually running (`backend/README.md`) — this is just the UI
 
 ```
 src/
-  api/          axios client + one file per resource (auth.js, monitors.js, checks.js, incidents.js, alerts.js, flags.js)
-  auth/         AuthContext (login/register/logout state), RequireAuth (route guard), tokens.js (localStorage)
+  api/          axios client + one file per resource (auth.js, monitors.js, checks.js, incidents.js, alerts.js, flags.js, admin.js)
+  auth/         AuthContext (login/register/logout + user profile), RequireAuth, RequireStaff (route guards), tokens.js
   flags/        FlagsContext (fetch-once-per-login feature flag map) — same shape as auth/, different concern
   components/   pieces reused by a page but not routes themselves — CheckHistory, IncidentHistory,
                 AlertChannels, StatusDot, MetricsBar, ResponseTimeChart, GoogleLoginButton
-  pages/        one file per route — LoginPage, RegisterPage, MonitorsPage, MonitorDetailPage
+  pages/        one file per route — LoginPage, RegisterPage, MonitorsPage, MonitorDetailPage, AdminPage
   App.jsx       routes
   main.jsx      wraps App in BrowserRouter + AuthProvider + FlagsProvider + GoogleOAuthProvider
 ```
@@ -83,6 +83,16 @@ Verified in a real browser: seeded a monitor with 15 checks at deliberately vari
 Deliberately fetch-once-per-login, not polled - unlike check/incident data, a flag isn't expected to change mid-session, so re-fetching on an interval would just be wasted requests. If a flag actually needs to take effect faster than "next login," that's a future problem, not one worth solving speculatively now.
 
 Verified in a real browser, all three states an admin could put a flag in: globally on → chart renders for a fresh login; globally off → chart doesn't render for a fresh login; globally off but granted to this one user specifically → chart renders for them. Confirmed by directly toggling the flag through the ORM between runs (same effect `/admin/` would have) rather than needing the admin UI to exist first.
+
+## Admin section
+
+`/admin` (the route, not Django's `/admin/`) - a staff-only page with a stats row (users/monitors/ongoing incidents/feature flags), a users table (deactivate/reactivate), and a feature-flags table (create, toggle globally-enabled, delete). Gated by a new `RequireStaff` guard, sitting alongside `RequireAuth` on the route - `RequireStaff` reads `user.is_staff` off `AuthContext`, which now also fetches `/api/accounts/me/` once per login (same fetch-once pattern as flags) so the frontend actually knows who's logged in beyond just "someone with a valid token."
+
+`RequireStaff` has one subtlety: `user` starts `null` right after login, until the `/me/` fetch resolves. If it redirected on `user == null` the same as `!user.is_staff`, a real staff member would get bounced to `/monitors` for a split second on every fresh login before the truth caught up - so it renders a plain loading state while `user` is still `null`, and only redirects once it's actually resolved to non-staff. An "Admin" link in `MonitorsPage`'s header is conditionally rendered the same way, off `user?.is_staff`.
+
+Same list-plus-form UI pattern as everywhere else in this app (`AlertChannels`, `MonitorsPage`'s form) - nothing new invented here, just applied to a different kind of data.
+
+Verified in a real browser: registered a non-staff user, confirmed no Admin link appears and confirmed typing `/admin` in directly redirects to `/monitors` rather than showing anything. Logged in as staff, confirmed the link appears and the page shows real data matching the database. Exercised every action for real, not just the optimistic UI state - created a flag and confirmed it's actually in the table, toggled it on and confirmed the toggle persisted, deleted it and confirmed it's actually gone, deactivated a user and confirmed against the database that `is_active` flipped and that user's own login now 401s.
 
 ## Auth for protected monitors
 
