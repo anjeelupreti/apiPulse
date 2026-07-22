@@ -39,8 +39,11 @@ Read-only, same reasoning as checks — incidents should only ever be created by
 |---|---|---|
 | GET | `/api/incidents/` | all incidents across my monitors |
 | GET | `/api/incidents/?monitor={id}` | just one monitor's incident history |
+| GET | `/api/incidents/?monitor={id}&resolved=false` | only ongoing incidents for that monitor |
+| GET | `/api/incidents/?monitor={id}&since=...&until=...` | date range, filtered against `started_at` (when the outage began, not when it resolved) |
 | GET | `/api/incidents/{id}/` | one specific incident |
 
 ## What's not built here yet
 
-- Nothing actually *notifies* me when an incident opens or resolves — that's supposed to be the `alerts` app's job, which doesn't exist yet. Right now the only way to know an incident happened is to look at this table.
+- Escalation - right now an incident sends exactly one "opened" email and one "resolved" email (see `alerts`), no matter how long the outage drags on. No "still down after an hour, nag me again" behavior. This is the Sentry-style pattern I want to adapt next: they don't just group and notify once, they can re-notify on rules like "seen again after being resolved" or "still happening N minutes later."
+- A configurable rules engine - the "3 in a row" threshold is hardcoded, not something a user can tune per-monitor.
