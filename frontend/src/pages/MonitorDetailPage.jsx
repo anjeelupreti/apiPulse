@@ -33,6 +33,8 @@ export function MonitorDetailPage() {
         <dd>{monitor.check_interval_seconds}s</dd>
         <dt>Last checked</dt>
         <dd>{monitor.last_checked_at ? new Date(monitor.last_checked_at).toLocaleString() : 'never'}</dd>
+        <dt>Auth</dt>
+        <dd>{monitor.has_auth_credential ? `${monitor.auth_type} (credential stored)` : 'none'}</dd>
       </dl>
 
       <AlertChannels monitorId={id} />

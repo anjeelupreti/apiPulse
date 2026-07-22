@@ -176,6 +176,14 @@ SIMPLE_JWT = {
 # secret + a redirect URI, and it's more machinery than an SPA needs).
 GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
 
+# Key for encrypting monitor auth credentials (API keys/tokens/basic auth
+# a user gives us so we can ping their protected endpoints) at rest in
+# Postgres. Generate with: python -c "from cryptography.fernet import
+# Fernet; print(Fernet.generate_key().decode())" - a fresh one per
+# environment. Losing this key means every stored credential becomes
+# unrecoverable garbage, so treat it like any other production secret.
+FIELD_ENCRYPTION_KEY = os.environ.get('FIELD_ENCRYPTION_KEY', '')
+
 
 # Celery — Redis is doing double duty here, it's both the task queue
 # (broker) and where task results get stashed (result backend)
