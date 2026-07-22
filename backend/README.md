@@ -59,7 +59,7 @@ I split by concern instead of one big app, because when something's broken I wan
 - **[monitors](apps/monitors/README.md)** — what I'm watching, and the scheduler that decides what's due
 - **[checks](apps/checks/README.md)** — the actual ping logic + one row per result
 - **[incidents](apps/incidents/README.md)** — deciding when a string of failures becomes an "outage"
-- **[alerts](apps/alerts/README.md)** — notifications, not built yet
+- **[alerts](apps/alerts/README.md)** — email notifications on incident open/resolve (Slack/webhook modeled, not sending yet)
 
 Each has its own README — go there for model fields, the actual API routes, and the reasoning behind that app specifically.
 
@@ -72,6 +72,8 @@ Each has its own README — go there for model fields, the actual API routes, an
 | `/api/monitors/` | full CRUD, see monitors README |
 | `/api/checks/` | read-only, see checks README |
 | `/api/incidents/` | read-only, see incidents README |
+| `/api/alert-channels/` | full CRUD, see alerts README |
+| `/api/notifications/` | read-only delivery log, see alerts README |
 
 Auth right now is Django session auth (cookie, if I'm logged into `/admin/`) or HTTP Basic auth (for curl / testing). Neither of these is what I want once there's a real frontend — I'll need token or JWT auth for that, haven't built it yet.
 
