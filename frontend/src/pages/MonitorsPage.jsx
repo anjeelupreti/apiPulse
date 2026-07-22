@@ -2,19 +2,26 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { listMonitors, createMonitor, deleteMonitor } from '../api/monitors';
+import { listIncidents } from '../api/incidents';
 import { useAuth } from '../auth/AuthContext';
+import { MetricsBar } from '../components/MetricsBar';
+import { StatusDot } from '../components/StatusDot';
 
 const emptyForm = { name: '', url: '', expected_status_code: 200 };
 
 export function MonitorsPage() {
   const { logout } = useAuth();
   const [monitors, setMonitors] = useState([]);
+  const [ongoingIncidents, setOngoingIncidents] = useState(0);
   const [form, setForm] = useState(emptyForm);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
 
   function refresh() {
-    return listMonitors().then(setMonitors);
+    return Promise.all([
+      listMonitors().then(setMonitors),
+      listIncidents(null, { resolved: 'false' }).then((data) => setOngoingIncidents(data.count)),
+    ]);
   }
 
   useEffect(() => {
@@ -44,6 +51,8 @@ export function MonitorsPage() {
         <h1>Monitors</h1>
         <button onClick={logout}>Log out</button>
       </header>
+
+      {!loading && <MetricsBar monitors={monitors} ongoingIncidents={ongoingIncidents} />}
 
       <form onSubmit={handleCreate} className="monitor-form">
         <input
@@ -77,6 +86,7 @@ export function MonitorsPage() {
           <thead>
             <tr>
               <th>Name</th>
+              <th>Status</th>
               <th>URL</th>
               <th>Expected status</th>
               <th>Last checked</th>
@@ -88,6 +98,9 @@ export function MonitorsPage() {
               <tr key={m.id}>
                 <td>
                   <Link to={`/monitors/${m.id}`}>{m.name}</Link>
+                </td>
+                <td>
+                  <StatusDot status={m.current_status} />
                 </td>
                 <td>{m.url}</td>
                 <td>{m.expected_status_code}</td>

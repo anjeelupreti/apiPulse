@@ -61,5 +61,4 @@ Added the `since`/`until`/`is_up` filters for the monitor detail page in the fro
 
 ## What's not built here yet
 
-- SSL data isn't shown in the frontend yet - `ssl_valid`/`ssl_expires_at` are in the API response already, just not rendered in `CheckHistory`'s table. Queued for the upcoming dashboard redesign rather than bolting plain table columns on now and re-styling them immediately after.
-- SSL status doesn't feed into incident detection at all - a monitor with an expiring/invalid cert but a correct HTTP response is still just "up" as far as `incidents` is concerned. Deliberately kept separate for now; "alert me before my cert expires" would be a real feature to add later, not something I backed into this quietly.
+- SSL data now renders in the frontend (`CheckHistory`'s SSL column, part of the dashboard redesign) but still doesn't feed into incident detection - a monitor with an expiring/invalid cert but a correct HTTP response is still just "up" as far as `incidents` is concerned. Deliberately kept separate for now; "alert me before my cert expires" would be a real feature to add later, not something I backed into this quietly.

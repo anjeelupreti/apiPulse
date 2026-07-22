@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom';
 import { getMonitor } from '../api/monitors';
 import { CheckHistory } from '../components/CheckHistory';
 import { IncidentHistory } from '../components/IncidentHistory';
+import { StatusDot } from '../components/StatusDot';
 
 export function MonitorDetailPage() {
   const { id } = useParams();
@@ -21,6 +22,7 @@ export function MonitorDetailPage() {
         <Link to="/monitors">&larr; back to monitors</Link>
       </p>
       <h1>{monitor.name}</h1>
+      <StatusDot status={monitor.current_status} />
       <dl>
         <dt>URL</dt>
         <dd>{monitor.url}</dd>
