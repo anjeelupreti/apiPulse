@@ -1,0 +1,51 @@
+.auth-page {
+  max-width: 320px;
+  margin: 4rem auto;
+}
+
+.auth-page form,
+.monitor-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.monitor-form {
+  flex-direction: row;
+  align-items: center;
+  margin: 1.5rem 0;
+}
+
+.auth-page label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+}
+
+input {
+  padding: 0.5rem;
+  font-size: 1rem;
+}
+
+.error {
+  color: #d33;
+}
+
+.monitors-page header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.5rem;
+  border-bottom: 1px solid #ddd;
+}

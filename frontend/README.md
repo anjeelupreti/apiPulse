@@ -1,25 +1,49 @@
 # frontend — my notes
 
-Empty folder right now. Writing this so future-me remembers the plan instead of staring at a blank directory wondering where to start.
+React app, scaffolded with Vite. Talks to the Django API purely over HTTP — nothing here touches Postgres or Redis directly, everything goes through `/api/...`.
 
-## What it's supposed to be
+## Running it
 
-React, per the original architecture sketch — a dashboard that shows my monitors, their up/down status, response-time charts, and incident history. Talks to the Django backend purely over the REST API in `backend/` — nothing here talks to Postgres or Redis directly, everything goes through `/api/...`.
+```bash
+cd frontend
+npm install
+cp .env.example .env   # points at the backend, default is fine for local dev
+npm run dev
+```
 
-## How it'll talk to the backend
+Needs the backend actually running (`backend/README.md`) — this is just the UI, it has nothing to show without the API behind it.
 
-Plain HTTP requests to `http://127.0.0.1:8000/api/...` in dev (a real domain once deployed). CORS is already turned on for this on the backend side (`django-cors-headers`, wide open in `dev.py`, will need to be locked down to the actual frontend origin in `prod.py` once that's real).
+## How it's laid out
 
-Auth is the one thing that has to change before this can really work: the backend currently authenticates via Django session cookies or HTTP Basic auth, neither of which is right for a React app with its own login screen. Before writing much frontend code I'll need to add token or JWT auth to the backend (probably `djangorestframework-simplejwt` or DRF's built-in token auth) so the frontend can log in once and attach a token to every request instead.
+```
+src/
+  api/          axios client + one file per resource (auth.js, monitors.js)
+  auth/         AuthContext (login/register/logout state), RequireAuth (route guard), tokens.js (localStorage)
+  pages/        one file per route — LoginPage, RegisterPage, MonitorsPage
+  App.jsx       routes
+  main.jsx      wraps App in BrowserRouter + AuthProvider
+```
 
-Later, if I want live-updating status instead of polling, a WebSocket connection (Django Channels) is the natural next step — polling `/api/checks/` every few seconds is a fine starting point though, no need to build that on day one.
+Same "split by concern" instinct as the backend — `api/` doesn't know anything about React, it's just functions that call endpoints and return data. `auth/` owns the token lifecycle. `pages/` just renders and calls into the other two.
 
-## What's not decided yet
+## The JWT dance (this is the part I had to actually think through)
 
-- Build tooling — probably Vite, haven't committed to it
-- State management — probably nothing fancy at first (React Query / plain fetch + hooks for server state), add Redux or similar only if it actually becomes painful without it
-- Charting library for response-time graphs
+`src/api/client.js` is a single axios instance every API call goes through:
 
-## Setup instructions
+- **Request interceptor** — if there's an access token in `localStorage`, attach it as `Authorization: Bearer <token>` on the way out. This is why none of the page components ever manually add auth headers, it's automatic.
+- **Response interceptor** — if a response comes back 401 (access token expired) *and* there's a refresh token *and* this isn't already a retry, it calls `/auth/token/refresh/`, stores the new access token, and replays the original request once. If the refresh itself fails (refresh token also expired), it clears everything and lets the failed request propagate — `RequireAuth` then bounces the user to `/login` because `isAuthenticated` reads "is there an access token in storage."
 
-Nothing to set up yet — there's no `package.json` here. This section gets filled in the moment I scaffold the actual React app.
+The refresh call uses a *separate* plain axios instance (`refreshClient`, no interceptors) — using the same intercepted `client` for the refresh request itself would risk a loop if the refresh endpoint ever also 401'd.
+
+`AuthContext` doesn't decode or validate the JWT client-side — `isAuthenticated` is just "is there a token sitting in localStorage." If that token's actually expired or garbage, the very next API call 401s and the interceptor above handles it. Didn't see the point of duplicating expiry logic client-side when the API is the real source of truth anyway.
+
+## What I actually verified works
+
+Ran it in a real browser end to end: register a new user → redirected to `/monitors` → add a monitor → it shows in the table → log out → log back in with the same credentials → the monitor's still there and still scoped to that user (didn't leak from/to any other account). No console errors.
+
+## What's not built yet
+
+- Anything showing Check/Incident history — right now the dashboard only shows the Monitor list itself, not its up/down history or response-time charts
+- Any polling/live updates — the monitor list loads once on page mount, doesn't refresh itself while you're looking at it
+- Build tooling beyond Vite's defaults — no path aliases, no component library, nothing fancy
+- Real styling — this is intentionally plain right now, functional over polished
