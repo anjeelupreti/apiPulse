@@ -17,13 +17,14 @@ Needs the backend actually running (`backend/README.md`) — this is just the UI
 
 ```
 src/
-  api/          axios client + one file per resource (auth.js, monitors.js, checks.js, incidents.js, alerts.js)
+  api/          axios client + one file per resource (auth.js, monitors.js, checks.js, incidents.js, alerts.js, flags.js)
   auth/         AuthContext (login/register/logout state), RequireAuth (route guard), tokens.js (localStorage)
+  flags/        FlagsContext (fetch-once-per-login feature flag map) — same shape as auth/, different concern
   components/   pieces reused by a page but not routes themselves — CheckHistory, IncidentHistory,
                 AlertChannels, StatusDot, MetricsBar, ResponseTimeChart, GoogleLoginButton
   pages/        one file per route — LoginPage, RegisterPage, MonitorsPage, MonitorDetailPage
   App.jsx       routes
-  main.jsx      wraps App in BrowserRouter + AuthProvider + GoogleOAuthProvider
+  main.jsx      wraps App in BrowserRouter + AuthProvider + FlagsProvider + GoogleOAuthProvider
 ```
 
 Same "split by concern" instinct as the backend — `api/` doesn't know anything about React, it's just functions that call endpoints and return data. `auth/` owns the token lifecycle. `pages/` just renders and calls into the other two. `components/` is new as of the monitor detail page - `CheckHistory` and `IncidentHistory` each have their own filter state and polling, so they earned their own files instead of living inline in `MonitorDetailPage`.
@@ -74,6 +75,14 @@ Why hand-rolled instead of a library: it's one line, one area, a few gridlines, 
 Nothing here gates on the chart - every value it plots is also sitting right there in the table underneath it, which is exactly what the skill means by "tooltips enhance, they never gate."
 
 Verified in a real browser: seeded a monitor with 15 checks at deliberately varied response times, confirmed the rendered line's shape matches the table's numbers exactly, confirmed mouse hover produces the right tooltip (value + timestamp) at the nearest point, and confirmed keyboard focus + arrow keys move through the same points with the same tooltip info.
+
+## Feature flags
+
+`flags/FlagsContext.jsx` - same shape as `AuthContext`, but for feature flags instead of auth state. Wraps the app (inside `AuthProvider`, since it needs to know `isAuthenticated` before it can fetch anything), fetches `/api/flags/mine/` once per login, and exposes `useFlags()` returning `{ flags }` - a plain `{key: boolean}` map. `CheckHistory` is the one place that actually reads it so far: `flags['response-time-chart']` gates whether `ResponseTimeChart` renders at all, alongside the existing `results.length > 0` check.
+
+Deliberately fetch-once-per-login, not polled - unlike check/incident data, a flag isn't expected to change mid-session, so re-fetching on an interval would just be wasted requests. If a flag actually needs to take effect faster than "next login," that's a future problem, not one worth solving speculatively now.
+
+Verified in a real browser, all three states an admin could put a flag in: globally on → chart renders for a fresh login; globally off → chart doesn't render for a fresh login; globally off but granted to this one user specifically → chart renders for them. Confirmed by directly toggling the flag through the ORM between runs (same effect `/admin/` would have) rather than needing the admin UI to exist first.
 
 ## Auth for protected monitors
 
