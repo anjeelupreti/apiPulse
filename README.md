@@ -8,7 +8,7 @@ I'm writing this doc mostly for myself, so that when I come back to this in a fe
 
 ```
                     ┌──────────────┐
-                    │   Browser    │   (frontend/ — haven't built this yet)
+                    │   Browser    │   frontend/ — React (Vite)
                     └──────┬───────┘
                            │ HTTP (REST API)
                            ▼
@@ -56,7 +56,7 @@ apiPulse/
 │       ├── checks/     the ping results (+ the actual ping task)
 │       ├── incidents/  outage tracking (+ open/resolve logic)
 │       └── alerts/     email notifications (Slack/webhook modeled, not sending yet)
-├── frontend/       React dashboard — haven't built this yet
+├── frontend/       React dashboard — login/register + monitor list+create, see frontend/README.md
 └── deployment/     docker-compose for Postgres/Redis
 ```
 
@@ -67,7 +67,7 @@ I split these into separate Django apps on purpose, one concern each, instead of
 1. **Spin up Postgres + Redis**: `cd deployment && docker compose up -d`
 2. **API server**: set up the venv in `backend/` (see backend/README.md), then `python manage.py runserver`
 3. **Monitoring engine** (only needed if I actually want checks to run): start a Celery worker + Celery beat, both documented in backend/README.md
-4. **Frontend**: nothing here yet
+4. **Frontend**: `cd frontend && npm install && cp .env.example .env && npm run dev` — see frontend/README.md
 
 ## What's actually done vs. what I still owe myself
 
@@ -79,7 +79,7 @@ I split these into separate Django apps on purpose, one concern each, instead of
 | SSL certificate checking | not built — fields exist on `Check` but I'm not populating them yet |
 | Email alerts on incident open/resolve | done — Gmail SMTP, verified a real email sends both ways |
 | Slack / webhook alerts | not built — `AlertChannel` model supports the types, no sender written yet |
-| React frontend | not built |
+| React frontend | in progress — login/register + monitor list+create working, verified in a real browser; no Check/Incident history view yet |
 | Registration + JWT auth | done — `/api/accounts/register/`, `/api/auth/token/`, verified a fresh user only ever sees their own monitors |
 | Multi-user teams / orgs / proper RBAC | not built — right now it's just "each user only sees their own monitors," no shared team workspaces |
 
