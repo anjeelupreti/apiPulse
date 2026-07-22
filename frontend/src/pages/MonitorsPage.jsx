@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import { listMonitors, createMonitor, deleteMonitor } from '../api/monitors';
 import { useAuth } from '../auth/AuthContext';
@@ -85,7 +86,9 @@ export function MonitorsPage() {
           <tbody>
             {monitors.map((m) => (
               <tr key={m.id}>
-                <td>{m.name}</td>
+                <td>
+                  <Link to={`/monitors/${m.id}`}>{m.name}</Link>
+                </td>
                 <td>{m.url}</td>
                 <td>{m.expected_status_code}</td>
                 <td>{m.last_checked_at ? new Date(m.last_checked_at).toLocaleString() : 'never'}</td>
