@@ -26,7 +26,10 @@ def perform_check(monitor_id):
 
     start = time.monotonic()
     try:
-        response = requests.request(monitor.method, monitor.url, timeout=monitor.timeout_seconds)
+        response = requests.request(
+            monitor.method, monitor.url, timeout=monitor.timeout_seconds,
+            **monitor.build_auth_kwargs(),
+        )
         response_time_ms = int((time.monotonic() - start) * 1000)
         status_code = response.status_code
         is_up = status_code == monitor.expected_status_code

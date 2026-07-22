@@ -7,7 +7,14 @@ import { useAuth } from '../auth/AuthContext';
 import { MetricsBar } from '../components/MetricsBar';
 import { StatusDot } from '../components/StatusDot';
 
-const emptyForm = { name: '', url: '', expected_status_code: 200 };
+const emptyForm = {
+  name: '',
+  url: '',
+  expected_status_code: 200,
+  auth_type: 'NONE',
+  auth_header_name: '',
+  auth_credential: '',
+};
 
 export function MonitorsPage() {
   const { logout } = useAuth();
@@ -73,6 +80,37 @@ export function MonitorsPage() {
           value={form.expected_status_code}
           onChange={(e) => setForm({ ...form, expected_status_code: Number(e.target.value) })}
         />
+
+        <details className="auth-fields">
+          <summary>Protected endpoint? (optional)</summary>
+          <div className="auth-fields__body">
+            <select
+              value={form.auth_type}
+              onChange={(e) => setForm({ ...form, auth_type: e.target.value })}
+            >
+              <option value="NONE">No auth</option>
+              <option value="BASIC">HTTP Basic (username:password)</option>
+              <option value="BEARER">Bearer token</option>
+              <option value="API_KEY">API key header</option>
+            </select>
+            {form.auth_type === 'API_KEY' && (
+              <input
+                placeholder="Header name, e.g. X-API-Key"
+                value={form.auth_header_name}
+                onChange={(e) => setForm({ ...form, auth_header_name: e.target.value })}
+              />
+            )}
+            {form.auth_type !== 'NONE' && (
+              <input
+                type="password"
+                placeholder={form.auth_type === 'BASIC' ? 'username:password' : 'token / key value'}
+                value={form.auth_credential}
+                onChange={(e) => setForm({ ...form, auth_credential: e.target.value })}
+              />
+            )}
+          </div>
+        </details>
+
         <button type="submit">Add monitor</button>
       </form>
       {error && <p className="error">{error}</p>}

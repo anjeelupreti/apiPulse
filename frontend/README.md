@@ -65,6 +65,12 @@ Clicking a monitor's name (`/monitors/:id`) goes to `MonitorDetailPage`, which r
 
 One wrinkle I had to handle: if you click "Load more" and pull in older pages, a naive auto-refresh would wipe that out by re-fetching just page 1 every 10 seconds. `CheckHistory` tracks a `viewingMore` flag and pauses its own polling once you've paged past "recent," with a "back to recent" button that resets and resumes it.
 
+## Auth for protected monitors
+
+The monitor creation form (`MonitorsPage`) has a collapsed `<details>` section, "Protected endpoint? (optional)" - expand it to pick an auth type (Basic/Bearer/API key) and enter the credential. Collapsed by default since most monitors don't need this and the form was already getting crowded.
+
+The credential input is `type="password"` so it's masked while typing, and it's a genuine write-only value on the wire too - the backend never sends it back (see the `monitors` README for why). What the detail page shows instead is `has_auth_credential` - a boolean, rendered as "BEARER (credential stored)" or "none," never the actual value. There's no edit capability for this yet (or for any monitor field - the form only creates), which is a real gap, just not a new one specific to auth.
+
 ## Google login
 
 `GoogleLoginButton` (in `components/`) wraps `@react-oauth/google`'s `GoogleLogin` component, dropped onto both `LoginPage` and `RegisterPage` - it's the same button either way, since the backend handles first-login-creates-the-account itself. `main.jsx` wraps the whole app in `GoogleOAuthProvider` with `VITE_GOOGLE_CLIENT_ID`, which is what lets `GoogleLogin` render at all.

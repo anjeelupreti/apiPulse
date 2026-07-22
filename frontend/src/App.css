@@ -124,9 +124,27 @@ button:hover {
 .monitor-form {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem;
   margin: 1.5rem 0;
+}
+
+.auth-fields {
+  flex-basis: 100%;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.auth-fields summary {
+  cursor: pointer;
+}
+
+.auth-fields__body {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
 }
 
 /* ---------- tables ---------- */
