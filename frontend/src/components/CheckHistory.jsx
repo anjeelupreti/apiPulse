@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { listChecks, fetchPage } from '../api/checks';
+import { useFlags } from '../flags/FlagsContext';
 import { ResponseTimeChart } from './ResponseTimeChart';
 import { StatusDot } from './StatusDot';
 
@@ -21,6 +22,7 @@ function SslBadge({ sslValid, sslExpiresAt }) {
 }
 
 export function CheckHistory({ monitorId }) {
+  const { flags } = useFlags();
   const [filters, setFilters] = useState({ is_up: '', since: '', until: '' });
   const [results, setResults] = useState([]);
   const [next, setNext] = useState(null);
@@ -85,7 +87,7 @@ export function CheckHistory({ monitorId }) {
         {viewingMore && <button onClick={loadRecent}>Back to recent</button>}
       </div>
 
-      {results.length > 0 && <ResponseTimeChart checks={results} />}
+      {results.length > 0 && flags['response-time-chart'] && <ResponseTimeChart checks={results} />}
 
       {results.length === 0 ? (
         <p>No checks yet.</p>
