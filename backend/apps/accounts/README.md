@@ -35,6 +35,19 @@ Access tokens last 1 hour, refresh tokens last 1 day (`SIMPLE_JWT` in `config/se
 
 I kept `SessionAuthentication` and `BasicAuthentication` in `REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES']` alongside JWT rather than replacing them — session auth is what makes the DRF browsable API (`/api/monitors/` in an actual browser, logged into `/admin/`) still work, and Basic auth is just convenient for me testing with curl. All three can coexist; DRF tries each in order and uses whichever one actually matches the request.
 
+## Logging in — Google
+
+`POST /api/auth/google/` — `{"id_token": "..."}` in, `{"access": "...", "refresh": "..."}` out. Same response shape as the regular token endpoint on purpose, so the frontend treats them identically once it has tokens.
+
+The important decision here was which OAuth flow to use. There are two real options:
+
+- **Server-side authorization code flow** — the classic "redirect to Google, Google redirects back with a code, your server exchanges the code (+ client secret) for tokens." Needs a redirect URI, needs the client secret, and is built around a browser doing full-page redirects — a bit of an awkward fit for an SPA that already has its own JWT-based session model.
+- **ID token verification (what I built)** — the frontend uses Google's Identity Services JS to get an ID token directly in the browser (no redirect at all), sends it to my backend, and I just verify it's genuinely signed by Google and meant for my app (`google.oauth2.id_token.verify_oauth2_token(token, ..., GOOGLE_CLIENT_ID)`). No client secret involved anywhere in this path — verification only needs the Client ID.
+
+Account linking: I look up (or create) a `User` by `username=email` from the verified token. First Google login for an email creates the account with `set_unusable_password()` (so nobody can log into it any other way, since a password was never set); every login after that finds the same user. If someone already registered normally with that email as their username, a Google login would just log into that same account — haven't hit this case in practice, just noting the behavior.
+
+`GOOGLE_CLIENT_SECRET` is stored in `.env` but genuinely unused by any code right now - kept around in case I ever add the server-side flow (e.g. for offline/background access to a Google API), not because this login path needs it.
+
 ## What's not built here yet
 
 - Logout / token blacklisting (right now a refresh token is valid until it naturally expires — no way to force-invalidate one early, e.g. if a token leaked)

@@ -170,6 +170,12 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }
 
+# Google login. Only the Client ID is actually used - we verify the ID
+# token the frontend gets from Google's Identity Services JS, we don't do
+# the server-side auth-code exchange (that's the flow that needs the
+# secret + a redirect URI, and it's more machinery than an SPA needs).
+GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
+
 
 # Celery — Redis is doing double duty here, it's both the task queue
 # (broker) and where task results get stashed (result backend)
