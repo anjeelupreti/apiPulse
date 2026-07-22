@@ -3,8 +3,9 @@ from django.db import models
 
 
 class Monitor(models.Model):
-    """A single API/website endpoint to watch. This is the config; actual
-    ping results are stored per-check in the `checks` app, not here."""
+    # This is just the config for what to watch — actual ping results live
+    # over in the checks app, not here. Keeping "what to watch" and "what
+    # happened" as separate concerns.
 
     class Method(models.TextChoices):
         GET = 'GET', 'GET'
@@ -23,6 +24,7 @@ class Monitor(models.Model):
     expected_status_code = models.PositiveSmallIntegerField(default=200)
 
     is_active = models.BooleanField(default=True)
+    last_checked_at = models.DateTimeField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

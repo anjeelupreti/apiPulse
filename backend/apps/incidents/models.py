@@ -2,8 +2,9 @@ from django.db import models
 
 
 class Incident(models.Model):
-    """An outage window for a Monitor: opened when checks start failing,
-    closed automatically once a later check succeeds again."""
+    # An outage window. Opened when a monitor starts failing, closed
+    # automatically the moment it succeeds again — see services.py for
+    # the actual open/resolve decision logic, this is just the record of it.
 
     monitor = models.ForeignKey(
         'monitors.Monitor', on_delete=models.CASCADE, related_name='incidents'
